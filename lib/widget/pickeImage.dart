@@ -28,9 +28,9 @@ class _PikeimageState extends State<Pikeimage> {
     if (imagepiker == null) {
       return;
     } else {
-      //بحولها الي صيغة فايل لتكون قابله للنسخ او العرض او الرفع
+      //بحول مسار الصوره الي صيغة فايل لتكون قابله للنسخ او العرض او الرفع
       File file = File(imagepiker!.path);
-      //للرجوع للصفحه معتحميل الصوره
+      //للرجوع للصفحه مع تحميل الصوره
       widget.onImageSelected(
         file,
       ); // نبعث الصورة للصفحة ال عاوزاستخدم فيها الصوره

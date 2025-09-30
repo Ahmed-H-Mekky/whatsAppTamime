@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ChatBubble extends StatelessWidget {
-  const ChatBubble({super.key, required this.text});
+  const ChatBubble({super.key, required this.text, required this.color});
   final String text;
+  final Color color;
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -16,7 +17,7 @@ class ChatBubble extends StatelessWidget {
             topRight: Radius.circular(32),
             bottomRight: Radius.circular(32),
           ),
-          // color: kColor,
+          color: color,
         ),
         child: Text(text),
       ),

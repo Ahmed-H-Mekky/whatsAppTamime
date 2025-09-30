@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:whatsapp/cubits/cubitMessages/sendeFirebaseMasseg.dart';
+import 'package:whatsapp/cubits/cubitMessages/sendefirebasemasseg.dart';
 
 class BottomSendMessage extends StatelessWidget {
   BottomSendMessage({super.key});

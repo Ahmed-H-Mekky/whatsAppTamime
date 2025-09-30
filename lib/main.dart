@@ -1,9 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:whatsapp/cubits/cubitMessages/sendeFirebaseMasseg.dart';
+import 'package:whatsapp/cubits/cubitMessages/sendefirebasemasseg.dart';
 import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
 import 'package:whatsapp/firebase_options.dart';
+import 'package:whatsapp/pages/chatePageHom.dart';
 import 'package:whatsapp/pages/otp.dart';
 import 'package:whatsapp/pages/singInPage.dart';
 import 'package:whatsapp/pages/chatPage.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
           OtpPage.id: (context) => OtpPage(),
           ChatHome.id: (context) => ChatHome(),
           Uploadimage.id: (context) => Uploadimage(),
+          Chatepagehom.id: (context) => Chatepagehom(),
         },
       ),
     );

@@ -1,9 +1,9 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:whatsapp/context/context.dart';
 import 'package:whatsapp/contextRoutPage/routPage.dart';
-import 'package:whatsapp/cubits/cubitMessages/sendeFirebaseMasseg.dart';
+import 'package:whatsapp/cubits/cubitMessages/sendefirebasemasseg.dart';
 import 'package:whatsapp/cubits/cubitMessages/statesFirbase.dart';
 import 'package:whatsapp/widget/chatBubble.dart';
 import 'package:whatsapp/widget/BottomSendMessage.dart';
@@ -14,7 +14,6 @@ class ChatHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userName = ModalRoute.of(context)!.settings.arguments as Map;
-
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
@@ -34,34 +33,47 @@ class ChatHome extends StatelessWidget {
           ],
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: BlocBuilder<Sendefirebasemasseg, Statesfirbase>(
-              builder: (context, state) {
-                var messagelist = BlocProvider.of<Sendefirebasemasseg>(
-                  context,
-                ).messageList;
-
-                if (state is SuccessSendeMessage) {
-                  return ListView.builder(
-                    reverse: true,
-                    itemCount: messagelist.length,
-                    itemBuilder: (context, index) {
-                      return ChatBubble(text: messagelist[index].message);
-                    },
-                  );
-                }
-
-                if (state is LoadingStat) {
-                  return const Center(child: SizedBox());
-                }
-
-                return const Center(child: CircularProgressIndicator());
-              },
-            ),
+          // الخلفية
+          Positioned.fill(
+            child: Image.asset('images/dark.jpeg', fit: BoxFit.cover),
           ),
-          BottomSendMessage(),
+
+          // المحتوى (الرسائل + التكست فيلد)
+          Column(
+            children: [
+              Expanded(
+                child: BlocBuilder<Sendefirebasemasseg, Statesfirbase>(
+                  builder: (context, state) {
+                    var messagelist = BlocProvider.of<Sendefirebasemasseg>(
+                      context,
+                    ).messageList;
+
+                    if (state is SuccessSendeMessage) {
+                      return ListView.builder(
+                        reverse: true,
+                        itemCount: messagelist.length,
+                        itemBuilder: (context, index) {
+                          return ChatBubble(
+                            text: messagelist[index].message,
+                            color: kColor,
+                          );
+                        },
+                      );
+                    }
+
+                    if (state is LoadingStat) {
+                      return const Center(child: SizedBox());
+                    }
+
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                ),
+              ),
+              BottomSendMessage(),
+            ],
+          ),
         ],
       ),
     );

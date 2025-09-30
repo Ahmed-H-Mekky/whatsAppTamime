@@ -5,6 +5,7 @@ import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
 import 'package:whatsapp/cubits/cubitRegister/logInState.dart';
 import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
 import 'package:whatsapp/pages/uploadImage.dart';
+import 'package:whatsapp/widget/TextRichBottom.dart';
 import 'package:whatsapp/widget/pinput.dart';
 import 'package:whatsapp/widget/textBottom.dart';
 
@@ -50,7 +51,6 @@ class _OtpPageState extends State<OtpPage> {
   Widget build(BuildContext context) {
     final phone = ModalRoute.of(context)!.settings.arguments as String;
     return Scaffold(
-      appBar: AppBar(title: const Text("ادخل الكود")),
       body: BlocConsumer<CubitLogin, StateLogIn>(
         listener: (context, state) {
           if (state is VerifiedState) {
@@ -63,25 +63,54 @@ class _OtpPageState extends State<OtpPage> {
         builder: (context, state) {
           return Stack(
             children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Align(
-                    //مع الكولم او الرو لجعل  العناصر في المنتصف align بستخدم ال
-                    alignment: Alignment.center,
-                    child: CustomrPinput(codeController: codeController),
-                  ),
+              Positioned.fill(
+                child: Image.asset('images/dark.jpeg', fit: BoxFit.cover),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 80),
+                      Text(
+                        '..... جاري التحقق من رقمك',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextRichBottom(
+                        ontap: () {},
+                        text2: 'المرسل عبر رسالة نصية قصيرة إلى هذا الرقم',
 
-                  const SizedBox(height: 20),
+                        text1:
+                            'في انتظار الكشف التلقائي عن الكود المكون من 6 أرقام\n ',
 
-                  //  إعادة إرسال الكود مع العداد
-                  TextBorron(
-                    context,
-                    phone,
-                    seconds: seconds,
-                    startTimer: startTimer,
+                        textBottom: ' 01500016300',
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      Align(
+                        //مع الكولم او الرو لجعل  العناصر في المنتصف align بستخدم ال
+                        alignment: Alignment.center,
+                        child: CustomrPinput(codeController: codeController),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      //  إعادة إرسال الكود مع العداد
+                      TextBorron(
+                        context,
+                        phone,
+                        seconds: seconds,
+                        startTimer: startTimer,
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
               //  مؤشّر التحميل
               if (state is LoadingState)

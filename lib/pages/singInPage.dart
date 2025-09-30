@@ -187,6 +187,7 @@ class _SingInState extends State<SingIn> {
           );
         },
       ),
+
       //علشان الزرار يكون دائما تحت
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(12.0),
