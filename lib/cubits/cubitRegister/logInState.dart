@@ -8,7 +8,6 @@ class LoadingState extends StateLogIn {}
 
 class VerifiedState extends StateLogIn {
   final User user;
-
   VerifiedState({required this.user});
 }
 

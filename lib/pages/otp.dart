@@ -5,7 +5,6 @@ import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
 import 'package:whatsapp/cubits/cubitRegister/logInState.dart';
 import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
 import 'package:whatsapp/pages/uploadImage.dart';
-import 'package:whatsapp/widget/TextRichBottom.dart';
 import 'package:whatsapp/widget/pinput.dart';
 import 'package:whatsapp/widget/textBottom.dart';
 
@@ -81,14 +80,32 @@ class _OtpPageState extends State<OtpPage> {
                         ),
                       ),
                       const SizedBox(height: 15),
-                      TextRichBottom(
-                        ontap: () {},
-                        text2: 'المرسل عبر رسالة نصية قصيرة إلى هذا الرقم',
-
-                        text1:
-                            'في انتظار الكشف التلقائي عن الكود المكون من 6 أرقام\n ',
-
-                        textBottom: ' 01500016300',
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            height: 1.5,
+                          ),
+                          children: const [
+                            TextSpan(
+                              text:
+                                  'في انتظار الكشف التلقائي عن الكود المكون من 6 أرقام\n',
+                            ),
+                            TextSpan(
+                              text: ' +201010252508 ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.greenAccent,
+                              ),
+                            ),
+                            TextSpan(
+                              text:
+                                  ' المرسل عبر رسالة نصية قصيرة إلى هذا الرقم',
+                            ),
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: 40),

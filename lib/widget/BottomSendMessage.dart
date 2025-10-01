@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:whatsapp/cubits/cubitMessages/sendefirebasemasseg.dart';
+import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
 
 class BottomSendMessage extends StatelessWidget {
   BottomSendMessage({super.key});
-
   final TextEditingController textEditingController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -26,10 +25,15 @@ class BottomSendMessage extends StatelessWidget {
             icon: const Icon(Icons.send, color: Colors.blue),
             onPressed: () {
               if (textEditingController.text.isNotEmpty) {
+                final phone = BlocProvider.of<CubitLogin>(context).userPhone;
+
                 BlocProvider.of<Sendefirebasemasseg>(context).sendMessage(
                   messagetext: textEditingController.text,
-                  id: "user1",
+                  id: phone!,
                   datetime: DateTime.now(),
+                  phon: BlocProvider.of<CubitLogin>(
+                    context,
+                  ).userPhone!, // ← الرقم من Cubit
                 );
                 textEditingController.clear();
               }

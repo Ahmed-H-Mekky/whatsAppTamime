@@ -7,16 +7,17 @@ import 'package:whatsapp/cubits/cubitMessages/statesFirbase.dart';
 class Sendefirebasemasseg extends Cubit<Statesfirbase> {
   Sendefirebasemasseg() : super(InitialState());
   List<Modelmessage> messageList = [];
-
   // إرسال رسالة
   Future<void> sendMessage({
     required String messagetext,
     required String id,
     required DateTime datetime,
+    required String phon,
   }) async {
     emit(LoadingStat());
     try {
       Servermessage.firbaseChat(
+        phon: phon,
         messagetext: messagetext,
         id: id,
         datetime: datetime,

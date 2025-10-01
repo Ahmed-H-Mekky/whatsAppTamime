@@ -11,12 +11,14 @@ class Servermessage {
     required String messagetext,
     required String id,
     required DateTime datetime,
+    required String phon,
   }) async {
     // إضافة الرسالة لفايرستور
     var response = await message.add({
       'message': messagetext,
       'id': id,
       kCreatedAte: datetime,
+      'phon': phon,
     });
 
     // إرجاع موديل من البيانات اللي حفظتها
@@ -25,6 +27,7 @@ class Servermessage {
       'id': id,
       kCreatedAte: datetime.toString(),
       'docId': response.id, // id الخاص بالـ document
+      'phon': phon,
     });
   }
 }

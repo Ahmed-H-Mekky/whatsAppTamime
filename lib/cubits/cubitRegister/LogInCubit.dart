@@ -7,10 +7,14 @@ class CubitLogin extends Cubit<StateLogIn> {
   final FirebaseAuth auth = FirebaseAuth.instance;
 
   String? _verificationId;
+  String? userPhone; // ← هذا لتخزين رقم الهاتف
+
   // ignore: unused_field
   int? _resendToken;
   // الفنكشن المسؤولة عن إرسال كود التحقق  للمستخدم
   Future<void> sendcode({required String phone, int? forceToken}) async {
+    userPhone = phone; // ← تخزين الرقم
+
     emit(LoadingState());
 
     await auth.verifyPhoneNumber(

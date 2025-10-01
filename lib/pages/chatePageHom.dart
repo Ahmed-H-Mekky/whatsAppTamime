@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp/contextRoutPage/routPage.dart';
 import 'package:whatsapp/pages/pagesBottom/CallsPage.dart';
-import 'package:whatsapp/pages/pagesBottom/ChatsPage.dart';
 import 'package:whatsapp/pages/pagesBottom/GroupsPag.dart';
 import 'package:whatsapp/pages/pagesBottom/StatusPage.dart';
 
@@ -15,89 +15,120 @@ class Chatepagehom extends StatefulWidget {
 
 class _ChatepagehomState extends State<Chatepagehom> {
   int _currentIndex = 0;
+  String _searchQuery = "";
 
-  // ✅ الصفحات لكل تبويب
+  // 🔹 إزالة كود الدولة + مسافات
+  String normalizePhone(String phone) {
+    phone = phone.replaceAll("+20", ""); // شيل كود الدولة
+    phone = phone.replaceAll(" ", ""); // شيل أي مسافات
+    return phone;
+  }
+
+  // 🔹 تحديد الصفحة
   Widget _getPage(int index) {
     switch (index) {
       case 0:
-        return CallsPage();
+        return const CallsPage();
       case 1:
-        return GroupsPage();
+        return const GroupsPage();
       case 2:
-        return StatusPage();
+        return const StatusPage();
       case 3:
-        return ChatsPage();
+        return _buildContactsList(); // صفحة الدردشات
       default:
-        return SizedBox();
+        return const SizedBox();
     }
+  }
+
+  // 🔹 جلب المستخدمين من Firestore
+  Widget _buildContactsList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('user').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final users = snapshot.data!.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return {
+            'id': doc.id, // id الخاص بالدوكيومنت
+            'phone':
+                data['phone'] ?? '', // رقم الهاتف (مع قيمة افتراضية لو null)
+            'name': data['MyName'] ?? 'مستخدم', // الاسم (لو null يرجع "مستخدم")
+          };
+        }).toList();
+
+        // فلترة حسب البحث
+        final query = _searchQuery.toLowerCase();
+        final filteredUsers = users.where((user) {
+          final phone = normalizePhone(user['phone'].toString()).toLowerCase();
+          final name = user['name'].toString().toLowerCase();
+
+          if (query.isEmpty) return true; // لو مفيش بحث اعرض الكل
+
+          return phone.contains(normalizePhone(query)) || name.contains(query);
+        }).toList();
+
+        if (filteredUsers.isEmpty) {
+          return const Center(
+            child: Text("لا يوجد مستخدم بهذا الاسم أو الرقم"),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: filteredUsers.length,
+          itemBuilder: (context, index) {
+            final user = filteredUsers[index];
+            return ListTile(
+              leading: const CircleAvatar(child: Icon(Icons.person)),
+              title: Text(user['name']), // عرض الاسم
+              subtitle: Text(user['phone']), // عرض رقم الهاتف
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  kChatHome,
+                  arguments: user, // نمرر بيانات المستخدم للشات
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'واتساب تميم',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        leadingWidth: 100,
-        leading: Row(
-          children: [
-            PopupMenuButton(
-              onSelected: (value) {
-                if (value == 'setting') {
-                  Navigator.pushNamed(context, KSettingpage);
-                }
-                // أضف إجراءات للخيارات الأخرى لو حبيت
-              },
-              icon: Icon(Icons.more_vert),
-              itemBuilder: (context) => [
-                PopupMenuItem(value: 'newGrope', child: Text('مجموعه جديده')),
-                PopupMenuItem(
-                  value: 'newMessageToAll',
-                  child: Text('رسالة جماعية جديدة'),
-                ),
-                PopupMenuItem(value: 'setting', child: Text('الاعدادات')),
-                PopupMenuItem(
-                  value: 'switchAcount',
-                  child: Text('تبديل الحسابات'),
-                ),
-              ],
-            ),
-            IconButton(icon: Icon(Icons.camera_alt_outlined), onPressed: () {}),
-          ],
-        ),
-      ),
+      appBar: AppBar(title: const Text('واتساب تميم'), centerTitle: true),
 
-      // ✅ محتوى الصفحة حسب التبويب المختار
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'او ابحث Ai اسال',
-                  suffixIcon: Icon(Icons.search_outlined),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+      body: Column(
+        children: [
+          // 🔹 مربع البحث
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val.trim();
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'ابحث بالاسم أو الرقم',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
             ),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 20)),
-          SliverToBoxAdapter(child: _getPage(_currentIndex)),
+
+          // 🔹 عرض الصفحة المناسبة
+          Expanded(child: _getPage(_currentIndex)),
         ],
       ),
 
-      // ✅ BottomNavigationBar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -106,28 +137,15 @@ class _ChatepagehomState extends State<Chatepagehom> {
           });
         },
         selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.call), label: 'المكالمات'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group_add_outlined),
-            label: 'الجروبات',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'الجروبات'),
           BottomNavigationBarItem(icon: Icon(Icons.adjust), label: 'الحالات'),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'الدردشات'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'الدردشات'),
         ],
       ),
-
-      // ✅ FloatingActionButton
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, kChatHome);
-        },
-        backgroundColor: const Color(0xFF25D366),
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 }

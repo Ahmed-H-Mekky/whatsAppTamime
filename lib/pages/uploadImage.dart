@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:whatsapp/contextRoutPage/routPage.dart';
 import 'package:whatsapp/cubits/cubitMessages/sendefirebasemasseg.dart';
+import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
 import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
 import 'package:whatsapp/model/ShowDailog.dart';
+import 'package:whatsapp/pages/chatePageHom.dart';
 import 'package:whatsapp/widget/GestureDetectorBottom.dart';
 
 class Uploadimage extends StatefulWidget {
@@ -160,22 +162,27 @@ class _UploadimageState extends State<Uploadimage> {
                   GestureDetectorBottom(
                     onTap: () {
                       if (countString(myController) >= 3) {
-                        //ببعت الصوره والاسم الي الفيربيز تتخزن
+                        // ببعت الصوره والاسم الي الفيربيز تتخزن
+                        final phone = BlocProvider.of<CubitLogin>(
+                          context,
+                        ).userPhone;
+
                         FirebaseFirestore.instance.collection('user').add({
                           'MyName': myController.text,
                           'Image': imageFil?.path,
+                          'phone': phone,
                         });
                         BlocProvider.of<Sendefirebasemasseg>(
                           context,
                         ).getMessage();
                         Navigator.pushNamed(
                           context,
-
-                          kChatHome,
-                          arguments: {
-                            'image': imageFil?.path,
-                            'myName': myController.text,
-                          },
+                          Chatepagehom.id,
+                          // kChatHome,
+                          // arguments: {
+                          //   'image': imageFil?.path,
+                          //   'myName': myController.text,
+                          // },
                         );
                       }
                     },

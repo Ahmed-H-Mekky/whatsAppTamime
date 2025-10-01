@@ -2,24 +2,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whatsapp/context/context.dart';
 
 class Modelmessage {
-  final String message;
+  final String text;
   final String id;
-  final DateTime dateTime;
+  final DateTime? createdAt;
+  final String? phon;
 
   Modelmessage({
-    required this.message,
+    required this.text,
     required this.id,
-    required this.dateTime,
+    this.createdAt,
+    this.phon,
   });
 
-  // Factory لتحويل من Map (Firestore or JSON) لـ Modelmessage
   factory Modelmessage.fromJson(Map<String, dynamic> json) {
     return Modelmessage(
-      message: json['message'],
-      id: json['id'],
-      dateTime: json[kCreatedAte] is Timestamp
+      text: json['message'] ?? '',
+      id: json['id'] ?? '',
+      phon: json['phon'], // لو مش موجود هتبقى null
+      createdAt: (json[kCreatedAte] is Timestamp)
           ? (json[kCreatedAte] as Timestamp).toDate()
-          : DateTime.parse(json[kCreatedAte].toString()),
+          : DateTime.tryParse(json[kCreatedAte]?.toString() ?? ''),
     );
   }
 }
