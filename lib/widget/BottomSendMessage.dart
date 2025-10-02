@@ -25,11 +25,9 @@ class BottomSendMessage extends StatelessWidget {
             icon: const Icon(Icons.send, color: Colors.blue),
             onPressed: () {
               if (textEditingController.text.isNotEmpty) {
-                final phone = BlocProvider.of<CubitLogin>(context).userPhone;
-
                 BlocProvider.of<Sendefirebasemasseg>(context).sendMessage(
                   messagetext: textEditingController.text,
-                  id: phone!,
+                  id: "user1",
                   datetime: DateTime.now(),
                   phon: BlocProvider.of<CubitLogin>(
                     context,

@@ -1,34 +1,27 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:whatsapp/contextRoutPage/routPage.dart';
+import 'package:whatsapp/cubits/cubitMessages/cubit.dart';
 import 'package:whatsapp/cubits/cubitMessages/sendefirebasemasseg.dart';
-import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
-import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
-import 'package:whatsapp/model/ShowDailog.dart';
 import 'package:whatsapp/pages/chatePageHom.dart';
 import 'package:whatsapp/widget/GestureDetectorBottom.dart';
+import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
+import 'package:whatsapp/model/ShowDailog.dart';
 
 class Uploadimage extends StatefulWidget {
   const Uploadimage({super.key});
-  static String id = kUploadimage;
+  static String id = '/uploadImage';
 
   @override
   State<Uploadimage> createState() => _UploadimageState();
 }
 
 class _UploadimageState extends State<Uploadimage> {
-  File? imageFil;
-  int count = 0;
-  final int textLength = 18;
+  File? imageFile;
   final TextEditingController myController = TextEditingController();
+  final int textLength = 18;
 
-  int countString(TextEditingController controller) {
-    count = controller.text.trimLeft().length;
-    if (count == textLength) count--;
-    return count;
-  }
+  int countString() => myController.text.trimLeft().length;
 
   @override
   Widget build(BuildContext context) {
@@ -62,18 +55,17 @@ class _UploadimageState extends State<Uploadimage> {
                   ),
                   const SizedBox(height: 20),
 
-                  //  صورة البروفايل
+                  // صورة البروفايل
                   Center(
                     child: Stack(
                       children: [
                         CircleAvatar(
                           radius: 60,
                           backgroundColor: Colors.grey[300],
-                          backgroundImage: imageFil != null
-                              //FileImage=> يأخذ ملف الصورة ويحوّله إلى صورة يمكن عرضها في الواجهة
-                              ? FileImage(imageFil!)
+                          backgroundImage: imageFile != null
+                              ? FileImage(imageFile!)
                               : null,
-                          child: imageFil == null
+                          child: imageFile == null
                               ? Icon(
                                   Icons.person,
                                   size: 80,
@@ -97,12 +89,11 @@ class _UploadimageState extends State<Uploadimage> {
                                 size: 20,
                               ),
                               onPressed: () {
-                                //لفتح المنيو لاختيار الصوره الشخصيه
                                 showDialogChooseImage(
                                   context,
                                   onImageSelected: (File file) {
                                     setState(() {
-                                      imageFil = file;
+                                      imageFile = file;
                                     });
                                   },
                                 );
@@ -116,7 +107,7 @@ class _UploadimageState extends State<Uploadimage> {
 
                   const SizedBox(height: 50),
 
-                  //  إدخال الاسم
+                  // إدخال الاسم
                   Row(
                     children: [
                       const Text('🙂', style: TextStyle(fontSize: 25)),
@@ -140,11 +131,11 @@ class _UploadimageState extends State<Uploadimage> {
                                 width: 2.0,
                               ),
                             ),
-                            prefixText: '${textLength - count} :',
+                            prefixText: '${textLength - countString()} :',
                           ),
                           onChanged: (val) {
                             setState(() {
-                              if (countString(myController) >= textLength) {
+                              if (countString() >= textLength) {
                                 showSnakBar(
                                   context,
                                   message: "وصلت للحد الأقصى",
@@ -160,33 +151,27 @@ class _UploadimageState extends State<Uploadimage> {
                   const Spacer(),
 
                   GestureDetectorBottom(
+                    text: 'التالي',
                     onTap: () {
-                      if (countString(myController) >= 3) {
-                        // ببعت الصوره والاسم الي الفيربيز تتخزن
-                        final phone = BlocProvider.of<CubitLogin>(
-                          context,
-                        ).userPhone;
+                      if (countString() >= 3) {
+                        // حفظ البيانات في Cubit
+                        context.read<UserCubit>().setUser(
+                          name: myController.text,
+                          phone: '0123456789', // ضع رقم الهاتف الحقيقي
+                          image: imageFile?.path,
+                        );
 
-                        FirebaseFirestore.instance.collection('user').add({
-                          'MyName': myController.text,
-                          'Image': imageFil?.path,
-                          'phone': phone,
-                        });
+                        // جلب الرسائل
                         BlocProvider.of<Sendefirebasemasseg>(
                           context,
                         ).getMessage();
-                        Navigator.pushNamed(
-                          context,
-                          Chatepagehom.id,
-                          // kChatHome,
-                          // arguments: {
-                          //   'image': imageFil?.path,
-                          //   'myName': myController.text,
-                          // },
-                        );
+
+                        // الانتقال إلى صفحة الدردشة
+                        Navigator.pushNamed(context, Chatepagehom.id);
+                      } else {
+                        showSnakBar(context, message: "الاسم قصير جدًا");
                       }
                     },
-                    text: 'التالي',
                   ),
                 ],
               ),

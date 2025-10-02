@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
 import 'package:whatsapp/cubits/cubitRegister/logInState.dart';
-import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
 import 'package:whatsapp/pages/otp.dart';
-import 'package:whatsapp/widget/GestureDetectorBottom.dart';
 import 'package:whatsapp/widget/dropBottomFrom.dart';
 import 'package:whatsapp/widget/textfromfield.dart';
+import 'package:whatsapp/widget/GestureDetectorBottom.dart';
+import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
 
 class SingIn extends StatefulWidget {
   const SingIn({super.key});
@@ -19,8 +19,8 @@ class _SingInState extends State<SingIn> {
   final GlobalKey<FormState> keyFrom = GlobalKey();
   final TextEditingController phoneController = TextEditingController();
 
-  String selectedCountry = "مصر"; // الدولة الافتراضية
-  String selectedCountryCode = "+20"; // الكود الافتراضي
+  String selectedCountry = "مصر";
+  String selectedCountryCode = "+20";
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +39,7 @@ class _SingInState extends State<SingIn> {
         listener: (context, state) {
           if (state is CodeSentState) {
             showSnakBar(context, message: 'تم ارسال الكود');
+
             Navigator.pushNamed(
               context,
               OtpPage.id,
@@ -86,7 +87,7 @@ class _SingInState extends State<SingIn> {
                               ),
                               const SizedBox(height: 30),
 
-                              //  اختيار الدولة (Dropdown)
+                              // اختيار الدولة
                               SizedBox(
                                 height: 45,
                                 width: double.infinity,
@@ -103,10 +104,9 @@ class _SingInState extends State<SingIn> {
                               ),
                               const SizedBox(height: 20),
 
-                              //  رقم الهاتف مع الكود
+                              // رقم الهاتف
                               Row(
                                 children: [
-                                  // الكود
                                   Container(
                                     height: 45,
                                     width: 70,
@@ -128,8 +128,6 @@ class _SingInState extends State<SingIn> {
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-
-                                  // رقم الهاتف
                                   Expanded(
                                     child: SizedBox(
                                       height: 45,
@@ -155,10 +153,9 @@ class _SingInState extends State<SingIn> {
                   ),
                 ),
               ),
-
               if (state is LoadingState)
                 Container(
-                  color: Colors.black.withValues(alpha: 0.7),
+                  color: Colors.black.withOpacity(0.7),
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.all(14),
@@ -188,7 +185,6 @@ class _SingInState extends State<SingIn> {
         },
       ),
 
-      //علشان الزرار يكون دائما تحت
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(12.0),
         child: GestureDetectorBottom(

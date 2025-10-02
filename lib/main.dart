@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:whatsapp/cubits/cubitMessages/cubit.dart';
 import 'package:whatsapp/cubits/cubitMessages/sendefirebasemasseg.dart';
 import 'package:whatsapp/cubits/cubitRegister/LogInCubit.dart';
 import 'package:whatsapp/firebase_options.dart';
@@ -26,14 +27,14 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => CubitLogin()),
-        BlocProvider(create: (context) => Sendefirebasemasseg()), // 👈 مضاف هنا
+        BlocProvider(create: (context) => Sendefirebasemasseg()..getMessage()),
+        BlocProvider(create: (context) => UserCubit()), // 👈 أضفنا UserCubit
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Golden Chat',
         theme: ThemeData.dark(),
-        // theme: ThemeData(primarySwatch: Colors.deepPurple),
-        home: SingIn(), // أول صفحة
+        home: SingIn(),
         routes: {
           OtpPage.id: (context) => OtpPage(),
           ChatHome.id: (context) => ChatHome(),

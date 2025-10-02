@@ -1,7 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:whatsapp/contextRoutPage/routPage.dart';
+import 'package:whatsapp/helps/snalBar/showSnakbar.dart';
+import 'package:whatsapp/pages/chatPage.dart';
 import 'package:whatsapp/pages/pagesBottom/CallsPage.dart';
+import 'package:whatsapp/pages/pagesBottom/ChatsPage.dart';
 import 'package:whatsapp/pages/pagesBottom/GroupsPag.dart';
 import 'package:whatsapp/pages/pagesBottom/StatusPage.dart';
 
@@ -15,16 +19,62 @@ class Chatepagehom extends StatefulWidget {
 
 class _ChatepagehomState extends State<Chatepagehom> {
   int _currentIndex = 0;
-  String _searchQuery = "";
+  String search = '';
+  List<Map<String, dynamic>> searchResults = [];
+  bool isLoading = false;
 
-  // 🔹 إزالة كود الدولة + مسافات
+  Map<String, dynamic>? selectedUser;
+  TextEditingController searchController = TextEditingController();
+
+  // ScrollController لكل صفحة لتخزين موقع التمرير
+  final ScrollController _scrollController = ScrollController();
+
+  // توحيد أرقام الهاتف لجميع الصيغ
   String normalizePhone(String phone) {
-    phone = phone.replaceAll("+20", ""); // شيل كود الدولة
-    phone = phone.replaceAll(" ", ""); // شيل أي مسافات
-    return phone;
+    String normalized = phone.replaceAll(RegExp(r'\D'), '');
+    if (normalized.startsWith('0020')) {
+      normalized = '0' + normalized.substring(4);
+    } else if (normalized.startsWith('20')) {
+      normalized = '0' + normalized.substring(2);
+    } else if (!normalized.startsWith('0')) {
+      normalized = '0' + normalized;
+    }
+    return normalized;
   }
 
-  // 🔹 تحديد الصفحة
+  // دالة البحث الجزئي بالرقم المحلي
+  Future<void> searchphone({required String phone}) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final dbRef = FirebaseFirestore.instance.collection('users');
+      final normalizedPhone = normalizePhone(phone);
+
+      final querySnapshot = await dbRef.get();
+
+      final results = querySnapshot.docs
+          .where((doc) {
+            final userPhone = doc['phone'] ?? '';
+            final normalizedUserPhone = normalizePhone(userPhone);
+            return normalizedUserPhone.contains(normalizedPhone);
+          })
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+
+      setState(() {
+        searchResults = results;
+      });
+    } catch (e) {
+      showSnakBar(context, message: e.toString());
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   Widget _getPage(int index) {
     switch (index) {
       case 0:
@@ -34,118 +84,170 @@ class _ChatepagehomState extends State<Chatepagehom> {
       case 2:
         return const StatusPage();
       case 3:
-        return _buildContactsList(); // صفحة الدردشات
+        return ChatsPage(
+          key: const PageStorageKey('ChatsPage'), // حفظ حالة الصفحة
+          searchResults: searchResults,
+          onUserSelected: (user) {
+            setState(() {
+              selectedUser = user;
+              searchResults = [];
+              searchController.clear();
+            });
+          },
+          scrollController: _scrollController, // تمرير ScrollController
+        );
       default:
         return const SizedBox();
     }
   }
 
-  // 🔹 جلب المستخدمين من Firestore
-  Widget _buildContactsList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('user').snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final users = snapshot.data!.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return {
-            'id': doc.id, // id الخاص بالدوكيومنت
-            'phone':
-                data['phone'] ?? '', // رقم الهاتف (مع قيمة افتراضية لو null)
-            'name': data['MyName'] ?? 'مستخدم', // الاسم (لو null يرجع "مستخدم")
-          };
-        }).toList();
-
-        // فلترة حسب البحث
-        final query = _searchQuery.toLowerCase();
-        final filteredUsers = users.where((user) {
-          final phone = normalizePhone(user['phone'].toString()).toLowerCase();
-          final name = user['name'].toString().toLowerCase();
-
-          if (query.isEmpty) return true; // لو مفيش بحث اعرض الكل
-
-          return phone.contains(normalizePhone(query)) || name.contains(query);
-        }).toList();
-
-        if (filteredUsers.isEmpty) {
-          return const Center(
-            child: Text("لا يوجد مستخدم بهذا الاسم أو الرقم"),
-          );
-        }
-
-        return ListView.builder(
-          itemCount: filteredUsers.length,
-          itemBuilder: (context, index) {
-            final user = filteredUsers[index];
-            return ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.person)),
-              title: Text(user['name']), // عرض الاسم
-              subtitle: Text(user['phone']), // عرض رقم الهاتف
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  kChatHome,
-                  arguments: user, // نمرر بيانات المستخدم للشات
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('واتساب تميم'), centerTitle: true),
-
+      appBar: AppBar(
+        title: const Text('واتساب تميم'),
+        centerTitle: true,
+        leadingWidth: 100,
+        leading: Row(
+          children: [
+            PopupMenuButton(
+              onSelected: (value) {
+                if (value == 'setting') {
+                  Navigator.pushNamed(context, KSettingpage);
+                }
+              },
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'newGrope', child: Text('مجموعه جديده')),
+                PopupMenuItem(
+                  value: 'newMessageToAll',
+                  child: Text('رسالة جماعية جديدة'),
+                ),
+                PopupMenuItem(value: 'setting', child: Text('الاعدادات')),
+                PopupMenuItem(
+                  value: 'switchAcount',
+                  child: Text('تبديل الحسابات'),
+                ),
+              ],
+            ),
+            IconButton(
+              icon: const Icon(Icons.camera_alt_outlined),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
       body: Column(
         children: [
-          // 🔹 مربع البحث
+          // 1. حقل البحث
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-              onChanged: (val) {
-                setState(() {
-                  _searchQuery = val.trim();
-                });
-              },
+              controller: searchController,
               decoration: InputDecoration(
-                hintText: 'ابحث بالاسم أو الرقم',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
+                hintText: 'ابحث عن رقم الهاتف',
+                suffixIcon: const Icon(Icons.search_outlined),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey),
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
+              onChanged: (value) {
+                search = value;
+                if (value.isEmpty) {
+                  setState(() {
+                    searchResults = [];
+                  });
+                } else {
+                  searchphone(phone: value);
+                }
+              },
             ),
           ),
 
-          // 🔹 عرض الصفحة المناسبة
-          Expanded(child: _getPage(_currentIndex)),
+          // 2. Container المستخدم المختار أسفل البحث
+          if (_currentIndex == 3 && selectedUser != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    ChatHome.id,
+                    arguments: selectedUser,
+                  );
+                },
+                child: Row(
+                  textDirection: TextDirection.rtl,
+                  children: [
+                    CircleAvatar(
+                      radius: 25,
+                      backgroundImage: selectedUser!['image'] != null
+                          ? FileImage(File(selectedUser!['image']))
+                          : null,
+                      child: selectedUser!['image'] == null
+                          ? const Icon(Icons.person)
+                          : null,
+                    ),
+                    const SizedBox(width: 10),
+
+                    const Text('ahmed', style: TextStyle(fontSize: 19)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        selectedUser!['MyName'] ?? '10:30 pm',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // 3. عرض باقي المستخدمين أو الدردشات
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _getPage(_currentIndex),
+          ),
         ],
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
+            // لا تمسح selectedUser عند الانتقال بين التبويبات
           });
         },
         selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Colors.white,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.call), label: 'المكالمات'),
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'الجروبات'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group_add_outlined),
+            label: 'الجروبات',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.adjust), label: 'الحالات'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'الدردشات'),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'الدردشات'),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, kChatHome);
+        },
+        backgroundColor: const Color(0xFF25D366),
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 }
