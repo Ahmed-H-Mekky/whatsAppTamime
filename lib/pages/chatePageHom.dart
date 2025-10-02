@@ -18,7 +18,7 @@ class Chatepagehom extends StatefulWidget {
 }
 
 class _ChatepagehomState extends State<Chatepagehom> {
-  int _currentIndex = 0;
+  int _currentIndex = 3;
   String search = '';
   List<Map<String, dynamic>> searchResults = [];
   bool isLoading = false;
@@ -240,14 +240,44 @@ class _ChatepagehomState extends State<Chatepagehom> {
           BottomNavigationBarItem(icon: Icon(Icons.message), label: 'الدردشات'),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: selectBottom(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+    );
+  }
+
+  Widget selectBottom() {
+    if (_currentIndex == 0) {
+      return FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, kChatHome);
+        },
+        backgroundColor: const Color(0xFF25D366),
+        child: const Icon(Icons.call),
+      );
+    } else if (_currentIndex == 1) {
+      return FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, kChatHome);
+        },
+        backgroundColor: const Color(0xFF25D366),
+        child: const Icon(Icons.group_add),
+      );
+    } else if (_currentIndex == 2) {
+      return FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, kChatHome);
+        },
+        backgroundColor: const Color(0xFF25D366),
+        child: const Icon(Icons.camera_alt_outlined),
+      );
+    } else {
+      return FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, kChatHome);
         },
         backgroundColor: const Color(0xFF25D366),
         child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-    );
+      );
+    }
   }
 }

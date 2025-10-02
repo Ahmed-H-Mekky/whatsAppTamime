@@ -34,37 +34,30 @@ class _ChatsPageState extends State<ChatsPage>
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
-                textDirection: TextDirection.rtl,
-                children: [
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundImage: user['image'] != null
-                        ? FileImage(File(user['image']))
-                        : null,
-                    child: user['image'] == null
-                        ? const Icon(Icons.person)
-                        : null,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      user['MyName'] ?? '-',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+
+            child: Row(
+              textDirection: TextDirection.rtl,
+              children: [
+                CircleAvatar(
+                  radius: 25,
+                  backgroundImage: user['image'] != null
+                      ? FileImage(File(user['image']))
+                      : null,
+                  child: user['image'] == null
+                      ? const Icon(Icons.person)
+                      : null,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    user['MyName'] ?? '10:30 pm',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Icon(Icons.message, color: Colors.green),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
